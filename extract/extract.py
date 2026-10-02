@@ -2,6 +2,7 @@
 
     python -m extract.extract ES2008a ES2008b --model <ollama-model>
     python -m extract.extract ES2008b --backend groq --model <groq-model>   # needs GROQ_API_KEY
+    python -m extract.extract --backend groq --list-models      # which model names can I use?
     python -m extract.extract ES2008a --lenient --show-dropped
 """
 from __future__ import annotations
@@ -14,7 +15,7 @@ import sys
 from collections import Counter
 from dataclasses import dataclass, field
 
-from extract.llm import LLM, ExtractionError, make_llm, ollama
+from extract.llm import LLM, ExtractionError, list_models, make_llm, ollama
 from extract.prompts import SYSTEM, build_user
 from extract.verify import BACKCHANNEL, Drop, Item, norm, verify_items
 from store import db
@@ -101,7 +102,7 @@ def extract_meeting(conn, meeting_id: str, llm: LLM, *, strict_quotes: bool = Tr
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("meetings", nargs="+")
+    ap.add_argument("meetings", nargs="*")
     ap.add_argument("--db", default=db.DEFAULT_DB)
     ap.add_argument("--backend", default=os.environ.get("MM_BACKEND", "ollama"),
                     choices=["ollama", "groq", "openrouter", "openai"],
@@ -110,9 +111,21 @@ def main() -> None:
     ap.add_argument("--model", default=os.environ.get("MM_MODEL"), help="model name (or set MM_MODEL)")
     ap.add_argument("--host", default="http://localhost:11434", help="Ollama host")
     ap.add_argument("--base-url", help="for --backend openai")
+    ap.add_argument("--list-models", action="store_true",
+                    help="print the model names your API key can use, then exit")
     ap.add_argument("--lenient", action="store_true", help="do not require word-for-word quotes")
     ap.add_argument("--show-dropped", action="store_true")
     args = ap.parse_args()
+    if args.list_models:
+        if args.backend == "ollama":
+            ap.error("for Ollama run `ollama list` instead")
+        try:
+            print("\n".join(list_models(args.backend, args.base_url)))
+        except ExtractionError as exc:
+            ap.error(str(exc))
+        return
+    if not args.meetings:
+        ap.error("give at least one meeting id, e.g. ES2008b")
     if not args.model:
         ap.error("pass --model <name> or set MM_MODEL")
 

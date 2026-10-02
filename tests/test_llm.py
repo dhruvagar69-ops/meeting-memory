@@ -4,7 +4,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import pytest
 
-from extract.llm import ExtractionError, make_llm, openai_compatible
+from extract.llm import ExtractionError, list_models, make_llm, openai_compatible
 
 
 def serve(responses):
@@ -82,3 +82,33 @@ def test_make_llm_requires_key_and_base_url(monkeypatch):
         make_llm("openai", "m")
     monkeypatch.setenv("GROQ_API_KEY", "x")
     assert callable(make_llm("groq", "m"))
+
+
+def test_user_agent_is_sent_and_models_are_listed(monkeypatch):
+    seen = []
+
+    class H(BaseHTTPRequestHandler):
+        def do_GET(self):
+            seen.append((self.path, self.headers.get("Authorization"), self.headers.get("User-Agent")))
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(json.dumps({"data": [{"id": "b-model"}, {"id": "a-model"}]}).encode())
+
+        def log_message(self, *a):
+            pass
+
+    srv = HTTPServer(("127.0.0.1", 0), H)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    monkeypatch.setenv("LLM_API_KEY", "K")
+    try:
+        names = list_models("openai", f"http://127.0.0.1:{srv.server_port}/v1")
+    finally:
+        srv.shutdown()
+    assert names == ["a-model", "b-model"]
+    assert seen[0][0] == "/v1/models" and seen[0][1] == "Bearer K" and "meeting-memory" in seen[0][2]
+
+
+def test_list_models_needs_key(monkeypatch):
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    with pytest.raises(ExtractionError, match="OPENROUTER_API_KEY"):
+        list_models("openrouter")
