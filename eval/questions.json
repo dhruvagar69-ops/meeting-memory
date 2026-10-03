@@ -1,0 +1,205 @@
+[
+  {
+    "id": "q01",
+    "question": "What three goals did the project manager set for the new remote control?",
+    "gold_answer": "It needs to be original, trendy and user-friendly.",
+    "gold_segments": [
+      "ES2008a-s0003"
+    ],
+    "answerable": true,
+    "multi_meeting": false
+  },
+  {
+    "id": "q02",
+    "question": "What is the project manager's name?",
+    "gold_answer": "Rose Lindgren.",
+    "gold_segments": [
+      "ES2008a-s0001"
+    ],
+    "answerable": true,
+    "multi_meeting": false
+  },
+  {
+    "id": "q03",
+    "question": "Which animal did Alima draw on the whiteboard?",
+    "gold_answer": "A turtle.",
+    "gold_segments": [
+      "ES2008a-s0013",
+      "ES2008a-s0016"
+    ],
+    "answerable": true,
+    "multi_meeting": false
+  },
+  {
+    "id": "q04",
+    "question": "How much did the team say the remote would sell for if it is sold separately?",
+    "gold_answer": "About twenty five Euro.",
+    "gold_segments": [
+      "ES2008b-s0216"
+    ],
+    "answerable": true,
+    "multi_meeting": false
+  },
+  {
+    "id": "q05",
+    "question": "What age group is the remote aimed at?",
+    "gold_answer": "People under sixty five.",
+    "gold_segments": [
+      "ES2008b-s0317"
+    ],
+    "answerable": true,
+    "multi_meeting": false
+  },
+  {
+    "id": "q06",
+    "question": "Why was voice recognition ruled out?",
+    "gold_answer": "It would add too much to the price.",
+    "gold_segments": [
+      "ES2008b-s0226"
+    ],
+    "answerable": true,
+    "multi_meeting": false
+  },
+  {
+    "id": "q07",
+    "question": "What kind of buttons did the team decide to go with?",
+    "gold_answer": "Pushbuttons.",
+    "gold_segments": [
+      "ES2008c-s0365"
+    ],
+    "answerable": true,
+    "multi_meeting": false
+  },
+  {
+    "id": "q08",
+    "question": "What was the plan for building the prototype?",
+    "gold_answer": "Two team members work together on a prototype made of modelling clay.",
+    "gold_segments": [
+      "ES2008c-s0389"
+    ],
+    "answerable": true,
+    "multi_meeting": false
+  },
+  {
+    "id": "q09",
+    "question": "How many buttons per unit did the team settle on, and what colour are they?",
+    "gold_answer": "Six buttons including the power button, all in one colour.",
+    "gold_segments": [
+      "ES2008d-s0382",
+      "ES2008d-s0420"
+    ],
+    "answerable": true,
+    "multi_meeting": false
+  },
+  {
+    "id": "q10",
+    "question": "What did the team decide about putting a slogan on the product?",
+    "gold_answer": "No slogan is needed.",
+    "gold_segments": [
+      "ES2008d-s0724"
+    ],
+    "answerable": true,
+    "multi_meeting": false
+  },
+  {
+    "id": "q11",
+    "question": "What did the project manager promise to send out or publish after the meetings?",
+    "gold_answer": "Minutes of the meeting, the slides, and project documentation (put up / emailed to the team).",
+    "gold_segments": [
+      "ES2008a-s0156",
+      "ES2008a-s0159",
+      "ES2008b-s0410"
+    ],
+    "answerable": true,
+    "multi_meeting": true
+  },
+  {
+    "id": "q12",
+    "question": "How did the team's thinking about the remote's power source develop over the meetings?",
+    "gold_answer": "Early on they considered a longer-lasting lithium battery, then asked whether a long-life battery was needed, and in the last meeting they confirmed a kinetic battery.",
+    "gold_segments": [
+      "ES2008b-s0383",
+      "ES2008d-s0335"
+    ],
+    "answerable": true,
+    "multi_meeting": true
+  },
+  {
+    "id": "q13",
+    "question": "What was the target cost to produce the remote, and how did they plan to sell it?",
+    "gold_answer": "Production target around twelve and a half Euro; the remote would be sold separately at about twenty five Euro.",
+    "gold_segments": [
+      "ES2008b-s0216",
+      "ES2008d-s0440"
+    ],
+    "answerable": true,
+    "multi_meeting": true
+  },
+  {
+    "id": "q14",
+    "question": "Which features or ideas did the team decide to leave out, and why?",
+    "gold_answer": "Teletext (the internet has taken it over), voice recognition (too expensive), a slogan, and the lost-remote finder idea (not worried about it for now).",
+    "gold_segments": [
+      "ES2008b-s0167",
+      "ES2008b-s0226",
+      "ES2008d-s0724",
+      "ES2008d-s0081"
+    ],
+    "answerable": true,
+    "multi_meeting": true
+  },
+  {
+    "id": "q15",
+    "question": "Where did fruit or vegetable ideas come up in the design discussions?",
+    "gold_answer": "In the third meeting (fruit-shaped buttons, using fruit or vegetable themes) and again in the last meeting (whether the design integrates fruit and vegetables, the mango remote).",
+    "gold_segments": [
+      "ES2008c-s0168",
+      "ES2008d-s0217"
+    ],
+    "answerable": true,
+    "multi_meeting": true
+  },
+  {
+    "id": "q16",
+    "question": "What did the team say about the shape of the remote?",
+    "gold_answer": "A round shape was suggested in the third meeting; in the final meeting the case was single curved.",
+    "gold_segments": [
+      "ES2008c-s0176",
+      "ES2008d-s0428"
+    ],
+    "answerable": true,
+    "multi_meeting": true
+  },
+  {
+    "id": "q17",
+    "question": "What is the name of the company's CEO?",
+    "gold_answer": "",
+    "gold_segments": [],
+    "answerable": false,
+    "multi_meeting": false
+  },
+  {
+    "id": "q18",
+    "question": "How many remote controls did the company sell last year?",
+    "gold_answer": "",
+    "gold_segments": [],
+    "answerable": false,
+    "multi_meeting": false
+  },
+  {
+    "id": "q19",
+    "question": "Which supplier will manufacture the remote's chip?",
+    "gold_answer": "",
+    "gold_segments": [],
+    "answerable": false,
+    "multi_meeting": false
+  },
+  {
+    "id": "q20",
+    "question": "On what date is the product launch?",
+    "gold_answer": "",
+    "gold_segments": [],
+    "answerable": false,
+    "multi_meeting": false
+  }
+]

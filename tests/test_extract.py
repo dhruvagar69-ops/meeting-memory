@@ -116,3 +116,15 @@ def test_all_chunks_failing_keeps_existing_items(conn):
     with pytest.raises(ExtractionError, match="401"):
         extract_meeting(conn, "M", down)
     assert len(db.list_items(conn, status=None)) == 3
+
+
+def test_json_with_surrounding_text_is_accepted():
+    out = call_json(lambda s, u: "Here you go:\n" + GOOD + "\nHope that helps!", "sys", "user")
+    assert len(out["decisions"]) == 1
+
+
+def test_progress_messages_are_reported(conn):
+    msgs = []
+    extract_meeting(conn, "M", lambda s, u: GOOD, progress=msgs.append)
+    assert any("chunk 1/1" in m and "waiting" in m for m in msgs)
+    assert any("done" in m and "kept 3" in m for m in msgs)

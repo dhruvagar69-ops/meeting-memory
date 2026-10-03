@@ -112,3 +112,75 @@ def test_list_models_needs_key(monkeypatch):
     monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
     with pytest.raises(ExtractionError, match="OPENROUTER_API_KEY"):
         list_models("openrouter")
+
+
+def test_json_validate_failed_falls_back_to_plain_mode():
+    err = (400, {}, {"error": {"code": "json_validate_failed", "failed_generation": ""}})
+    srv, url, seen = serve([err, OK])
+    try:
+        out = openai_compatible("m", url, "K")("s", "u")
+    finally:
+        srv.shutdown()
+    assert out and "response_format" in seen[0][2] and "response_format" not in seen[1][2]
+
+
+def test_retry_is_logged():
+    srv, url, _ = serve([(429, {"Retry-After": "3"}, {}), OK])
+    logs = []
+    try:
+        openai_compatible("m", url, "K", sleep=lambda s: None, log=logs.append)("s", "u")
+    finally:
+        srv.shutdown()
+    assert any("rate limited" in m and "3s" in m for m in logs)
+
+
+def test_max_tokens_and_reasoning_effort_are_sent():
+    srv, url, seen = serve([OK])
+    try:
+        openai_compatible("m", url, "K", max_tokens=1234, reasoning_effort="low")("s", "u")
+    finally:
+        srv.shutdown()
+    body = seen[0][2]
+    assert body["max_tokens"] == 1234 and body["reasoning_effort"] == "low"
+
+
+def test_reasoning_effort_rejected_is_dropped():
+    srv, url, seen = serve([(400, {}, {"error": "unknown parameter: reasoning_effort"}), OK])
+    try:
+        openai_compatible("m", url, "K", reasoning_effort="low")("s", "u")
+    finally:
+        srv.shutdown()
+    assert "reasoning_effort" in seen[0][2] and "reasoning_effort" not in seen[1][2]
+
+
+def test_empty_reply_is_diagnosed():
+    empty = (200, {}, {"choices": [{"message": {"content": ""}, "finish_reason": "length"}],
+                       "usage": {"completion_tokens": 6000}})
+    srv, url, _ = serve([empty])
+    logs = []
+    try:
+        out = openai_compatible("m", url, "K", log=logs.append)("s", "u")
+    finally:
+        srv.shutdown()
+    assert out == "" and any("finish_reason=length" in m and "6000" in m for m in logs)
+
+
+def test_413_gives_actionable_hint():
+    srv, url, _ = serve([(413, {}, {"error": "Request too large ... TPM"})])
+    try:
+        with pytest.raises(ExtractionError, match="max-tokens"):
+            openai_compatible("m", url, "K")("s", "u")
+    finally:
+        srv.shutdown()
+
+
+def test_daily_token_limit_stops_immediately():
+    msg = {"error": {"message": "Rate limit reached ... on tokens per day (TPD): Limit 200000, Used 199464"}}
+    srv, url, seen = serve([(429, {}, msg)])
+    waits = []
+    try:
+        with pytest.raises(ExtractionError, match="Daily token limit"):
+            openai_compatible("m", url, "K", sleep=waits.append)("s", "u")
+    finally:
+        srv.shutdown()
+    assert waits == [] and len(seen) == 1

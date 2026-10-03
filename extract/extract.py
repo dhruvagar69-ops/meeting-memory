@@ -12,10 +12,11 @@ import json
 import os
 import re
 import sys
+import time
 from collections import Counter
 from dataclasses import dataclass, field
 
-from extract.llm import LLM, ExtractionError, list_models, make_llm, ollama
+from extract.llm import LLM, ExtractionError, list_models, make_llm, ollama, tokens_used
 from extract.prompts import SYSTEM, build_user
 from extract.verify import BACKCHANNEL, Drop, Item, norm, verify_items
 from store import db
@@ -59,15 +60,16 @@ def call_json(llm: LLM, system: str, user: str) -> dict:
                    "Reply with ONLY the JSON object, nothing else.")
         last = llm(system, prompt)
         text = re.sub(r"^```(?:json)?\s*|\s*```$", "", last.strip())
-        try:
-            return json.loads(text)
-        except json.JSONDecodeError:
-            continue
+        for candidate in (text, text[text.find("{"):text.rfind("}") + 1]):  # tolerate text around the JSON
+            try:
+                return json.loads(candidate)
+            except json.JSONDecodeError:
+                pass
     raise ExtractionError(f"model returned invalid JSON twice: {last[:120]!r}")
 
 
 def extract_meeting(conn, meeting_id: str, llm: LLM, *, strict_quotes: bool = True,
-                    max_chars: int = 12000) -> Report:
+                    max_chars: int = 12000, progress=None) -> Report:
     rows = db.get_segments(conn, meeting_id)
     if not rows:
         raise ValueError(f"No segments stored for {meeting_id}. Load it with ingest.add_meeting first.")
@@ -76,14 +78,21 @@ def extract_meeting(conn, meeting_id: str, llm: LLM, *, strict_quotes: bool = Tr
     report = Report(meeting_id)
 
     seen: set[tuple[str, str]] = set()
-    for chunk in chunk_lines(render_lines(rows), max_chars):
+    say = progress or (lambda msg: None)
+    all_chunks = chunk_lines(render_lines(rows), max_chars)
+    for n, chunk in enumerate(all_chunks, 1):
         report.chunks += 1
+        say(f"  chunk {n}/{len(all_chunks)}: {len(chunk)} lines, waiting for the model ...")
+        started = time.time()
         try:
             raw = call_json(llm, SYSTEM, build_user(meeting_id, speakers, [l for _, l in chunk]))
         except ExtractionError as exc:
             report.dropped.append(Drop("chunk", "", str(exc)))
+            say(f"  chunk {n}/{len(all_chunks)}: FAILED after {time.time() - started:.0f}s")
             continue
         kept, dropped = verify_items(raw, by_idx, speakers, strict_quotes)
+        say(f"  chunk {n}/{len(all_chunks)}: done in {time.time() - started:.0f}s, "
+            f"kept {len(kept)}, dropped {len(dropped)}")
         report.dropped += dropped
         for it in kept:
             key = (it.type, norm(it.text))
@@ -111,6 +120,12 @@ def main() -> None:
     ap.add_argument("--model", default=os.environ.get("MM_MODEL"), help="model name (or set MM_MODEL)")
     ap.add_argument("--host", default="http://localhost:11434", help="Ollama host")
     ap.add_argument("--base-url", help="for --backend openai")
+    ap.add_argument("--max-tokens", type=int, default=6000,
+                    help="max output tokens per call (reasoning models need room to think)")
+    ap.add_argument("--reasoning-effort", choices=["low", "medium", "high"],
+                    help="for reasoning models such as openai/gpt-oss-*; lower is faster")
+    ap.add_argument("--chunk-chars", type=int, default=12000,
+                    help="max characters of transcript per model call; smaller chunks can find more items")
     ap.add_argument("--list-models", action="store_true",
                     help="print the model names your API key can use, then exit")
     ap.add_argument("--lenient", action="store_true", help="do not require word-for-word quotes")
@@ -131,15 +146,22 @@ def main() -> None:
 
     conn = db.connect(args.db)
     try:
-        llm = make_llm(args.backend, args.model, args.host, args.base_url)
+        llm = make_llm(args.backend, args.model, args.host, args.base_url,
+                       log=lambda m: print(m, flush=True), max_tokens=args.max_tokens,
+                       reasoning_effort=args.reasoning_effort)
     except ExtractionError as exc:
         ap.error(str(exc))
     for mid in args.meetings:
         try:
-            rep = extract_meeting(conn, mid, llm, strict_quotes=not args.lenient)
+            print(f"{mid}: extracting (this can take a few minutes; Ctrl+C to stop) ...", flush=True)
+            rep = extract_meeting(conn, mid, llm, strict_quotes=not args.lenient,
+                                  max_chars=args.chunk_chars,
+                                  progress=lambda m: print(m, flush=True))
         except ExtractionError as exc:
             sys.exit(f"{mid}: extraction failed, nothing was changed. {exc}")
-        proposed = len(rep.items) + len(rep.dropped)
+        chunk_errors = [d for d in rep.dropped if d.type == "chunk"]
+        other_drops = [d for d in rep.dropped if d.type != "chunk"]
+        proposed = len(rep.items) + len(other_drops)
         print(f"\n=== {mid}: kept {len(rep.items)} of {proposed} proposed "
               f"({rep.chunks} chunk(s)) ===")
         for typ in ("decision", "action", "question"):
@@ -150,11 +172,16 @@ def main() -> None:
                 print(f"{typ.upper():9}{who} {it.text}{dl}\n          "
                       f"cite {it.segment_id} @{int(seg['start_s'] // 60):02d}:{int(seg['start_s'] % 60):02d}"
                       f"  \"{it.quote}\"")
-        if rep.dropped:
-            print("dropped:", dict(Counter(d.reason for d in rep.dropped)))
+        if chunk_errors:
+            print(f"WARNING: {len(chunk_errors)} of {rep.chunks} chunk(s) failed, so these results are incomplete. "
+                  f"First error: {chunk_errors[0].reason.strip()[:300]}")
+        if other_drops:
+            print("dropped:", dict(Counter(d.reason for d in other_drops)))
             if args.show_dropped:
-                for d in rep.dropped:
+                for d in other_drops:
                     print(f"  - {d.type}: {d.text[:70]} ({d.reason})")
+    if args.backend != "ollama":
+        print(f"\ntokens used by this run: {tokens_used()}")
 
 
 if __name__ == "__main__":

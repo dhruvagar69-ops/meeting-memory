@@ -9,13 +9,19 @@ Rules:
     "segment": the segment number of the single line that best supports it
     "quote":   an exact, word-for-word excerpt copied from THAT line (at least 3 words
                when the line is long)
-- "decision": the group clearly agreed or settled something.
-- "action": a person commits to, or is asked to, do something. "owner" must be a speaker
-  label exactly as it appears in the transcript (for example "A (PM)"), or "Unassigned"
-  if it is unclear. "deadline" only if a time or date is actually spoken in that line,
-  otherwise null.
-- "question": a question that was raised and left unanswered.
-- Ignore small talk, greetings and jokes. If there is nothing to report, return empty lists.
+- "decision": a statement of what the group WILL do, use or not do, that was agreed or
+  settled. A question, an opinion, or a suggestion nobody accepted is NOT a decision.
+- "action": a person commits to, or is asked to and accepts, doing something in the FUTURE.
+  Something already done ("I just did that") is not an action. "owner" must be the speaker
+  label (for example "A (PM)") of the person who will do it; if the person is "everyone",
+  someone not listed, or unclear, use "Unassigned". "deadline" only if a time or date is
+  actually spoken in that line, otherwise null.
+- "question": a question that was raised and is NOT answered anywhere later in the
+  transcript you were given.
+- The "quote" must come from the line that itself states the decision, commitment or
+  question, not from a nearby line.
+- Ignore small talk, greetings and jokes. Prefer fewer, correct items over many uncertain
+  ones. If there is nothing to report, return empty lists.
 
 Reply with ONLY a JSON object of this shape, no other text:
 {

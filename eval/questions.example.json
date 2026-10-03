@@ -1,0 +1,18 @@
+[
+  {
+    "id": "example-1",
+    "question": "Which meetings talked about the battery?",
+    "gold_answer": "All four: ES2008a, ES2008b, ES2008c and ES2008d (kinetic battery in the later ones).",
+    "gold_segments": ["ES2008d-s0335"],
+    "answerable": true,
+    "multi_meeting": true
+  },
+  {
+    "id": "example-2",
+    "question": "Who is the CEO of the company?",
+    "gold_answer": "",
+    "gold_segments": [],
+    "answerable": false,
+    "multi_meeting": false
+  }
+]
