@@ -79,3 +79,16 @@ def test_per_meeting_keeps_a_quiet_meeting_from_being_crowded_out():
     db.add_meeting(c, "Q", "Q", "t", None, quiet)
     assert {w.meeting_id for w in retrieve(c, "button", k=3, context=0)} == {"L"}
     assert {w.meeting_id for w in retrieve(c, "button", k=3, context=0, per_meeting=1)} == {"L", "Q"}
+
+
+def test_broad_questions_get_a_helpful_message_and_do_not_call_the_model():
+    from ask.ask import BROAD_QUESTION
+    from ask.retrieve import is_broad_question
+    for q in ["What was the meeting about?", "Summarize the meeting", "What was discussed in the meeting?"]:
+        assert is_broad_question(q)
+        llm = fake({"found": True, "answer": "made up [S1]"})
+        a = answer_question(make_conn(), q, llm)
+        assert not a.found and a.text == BROAD_QUESTION and llm.calls == []
+        assert BROAD_QUESTION in format_answer(a)
+    assert not is_broad_question("What was decided about the price?")
+    assert not is_broad_question("What is the capital of France?")

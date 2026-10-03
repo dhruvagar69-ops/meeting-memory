@@ -13,12 +13,15 @@ import os
 import re
 from dataclasses import dataclass, field
 
-from ask.retrieve import Window, retrieve
+from ask.retrieve import Window, is_broad_question, retrieve
 from extract.extract import call_json
 from extract.llm import ExtractionError, LLM, make_llm
 from store import db
 
 NOT_FOUND = "Not found in these meetings."
+BROAD_QUESTION = ("That question is too general for me to search. I find specific things people said, so ask "
+                  "about a topic, for example: \"What did the team decide about the buttons?\". For an overview "
+                  "of a meeting, use the Decisions & actions page in the app.")
 
 SYSTEM = """You answer questions about meetings using ONLY the numbered sources provided.
 
@@ -92,6 +95,8 @@ def check_citations(text: str, valid: set[int]) -> tuple[str, list[int], list[in
 def answer_question(conn, question: str, llm: LLM, *, k: int = 12, context: int = 1,
                     max_windows: int = 6, expand: bool = False, extra_terms=None,
                     per_meeting: int = 0) -> Answer:
+    if is_broad_question(question):  # nothing specific to search for: say so, do not call the model
+        return Answer(question, False, BROAD_QUESTION)
     if extra_terms is None:
         extra_terms = expand_terms(llm, question) if expand else []
     windows = retrieve(conn, question, k=k, context=context, max_windows=max_windows, per_meeting=per_meeting,
@@ -110,7 +115,7 @@ def answer_question(conn, question: str, llm: LLM, *, k: int = 12, context: int 
 
 
 def format_answer(a: Answer) -> str:
-    out = [a.text if a.found else NOT_FOUND]
+    out = [a.text]
     if a.found and not a.verified:
         out.append("\nUNVERIFIED: the model gave no valid citation, so treat this as a guess.")
     if a.removed_citations:

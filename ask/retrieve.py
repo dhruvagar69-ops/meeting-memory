@@ -19,6 +19,17 @@ _STOP = {
 }
 
 
+_BROAD = {"summarize", "summarise", "summary", "overview", "recap", "highlights", "gist", "main",
+          "points", "topics", "topic", "everything", "anything", "happened", "going"}
+
+
+def is_broad_question(question: str) -> bool:
+    """True when the question has no specific topic to search for, e.g. "What was the meeting about?"
+    or "Summarize the meeting". Keyword search cannot answer these."""
+    words = [t for t in re.findall(r"[a-z0-9]+", question.lower()) if t not in _STOP and len(t) >= 3]
+    return all(w in _BROAD for w in words)
+
+
 @dataclass
 class Window:
     meeting_id: str
