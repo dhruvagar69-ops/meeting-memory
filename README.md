@@ -237,6 +237,7 @@ tests/     unit tests (run with: python -m pytest -q)
 - Free-tier hosted models have daily and per-minute token limits. A daily limit stops a run immediately. Pick another `--model`, wait for the limit to refill, or resume with `--resume`.
 - Commits after the challenge deadline (Mon 2026-10-05 12:29 PM IST): none at the time of writing.
 - Built with the help of Claude (code, tests and evaluation design). I made the project decisions and did the labelling.
+- General questions such as 'what was the meeting about?' are not supported, because retrieval is keyword-only. The app says so, and the Decisions & actions page gives an overview.
 
 ## License
 
