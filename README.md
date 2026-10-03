@@ -55,8 +55,8 @@ Hand-labelled by me on the AMI ES2008 meetings. Small samples, so treat them as 
 
 | Setup | yes / partial / no | Strict | Lenient |
 |---|---|---|---|
-| Baseline | 11 / 5 / 4 | 0.55 | 0.80 |
-| Combined | 11 / 7 / 2 | 0.55 | 0.90 |
+| results_qwen | 11 / 5 / 4 | 0.55 | 0.80 |
+| results_qwen_combined | 11 / 7 / 2 | 0.55 | 0.90 |
 
 All 4 unanswerable questions correctly returned "Not found" in both setups. On the 16 answerable questions only, strict is 0.44 for both and lenient is 0.75 vs 0.88.
 
