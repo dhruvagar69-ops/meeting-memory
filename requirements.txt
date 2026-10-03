@@ -5,3 +5,4 @@
 # streamlit
 # faster-whisper  # only if you test audio
 pytest
+streamlit

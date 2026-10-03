@@ -123,6 +123,16 @@ Aman: sounds good
 
 Load one with `python -m ingest.add_meeting plain path/to/meeting.txt --id my-meeting`.
 
+## Web app
+
+pip install streamlit
+streamlit run app.py
+
+Run it from the project folder with your API key set in the same terminal. The Ask page is a chat
+that shows the meeting lines behind every answer ("Not found" when the meetings don't contain it).
+The Decisions & actions page lists extracted items with the quote behind each. The sidebar shows
+which backend you are using; with Groq, questions and retrieved lines are sent to Groq.
+
 ## Evaluate
 
 ```
@@ -223,6 +233,7 @@ extract/   prompts.py, extract.py, verify.py, llm.py    (extraction, checks, mod
 ask/       retrieve.py, ask.py                          (retrieval, cited answers)
 eval/      questions.json, run_eval.py, export_items.py, results and label CSVs
 tests/     unit tests (run with: python -m pytest -q)
+app.py     Streamlit front end (Ask page + Decisions & actions page)
 ```
 
 ## Data and attribution
