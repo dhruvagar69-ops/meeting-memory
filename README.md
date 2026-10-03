@@ -223,6 +223,7 @@ Model size mattered a great deal on this meeting, although the settings differed
 - Extraction precision was measured on one meeting; recall was not measured.
 - The hosted models mean transcript text left the machine in these runs. Use the local backend for private meetings.
 - No real friend or team tested it, so there is no user feedback.
+- General questions such as 'what was the meeting about?' are not supported, because retrieval is keyword-only. The app says so, and the Decisions & actions page gives an overview.
 
 ## Repository layout
 
@@ -248,7 +249,6 @@ app.py     Streamlit front end (Ask page + Decisions & actions page)
 - Free-tier hosted models have daily and per-minute token limits. A daily limit stops a run immediately. Pick another `--model`, wait for the limit to refill, or resume with `--resume`.
 - Commits after the challenge deadline (Mon 2026-10-05 12:29 PM IST): none at the time of writing.
 - Built with the help of Claude (code, tests and evaluation design). I made the project decisions and did the labelling.
-- General questions such as 'what was the meeting about?' are not supported, because retrieval is keyword-only. The app says so, and the Decisions & actions page gives an overview.
 
 ## License
 
