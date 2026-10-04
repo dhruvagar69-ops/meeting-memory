@@ -1,8 +1,2 @@
-# Ingest + storage use only the standard library.
-# Later layers (add as you reach them):
-# ollama
-# chromadb        # or sqlite-vec
-# streamlit
-# faster-whisper  # only if you test audio
 pytest
 streamlit
